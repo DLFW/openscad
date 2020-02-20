@@ -510,6 +510,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	ShortCutConfigurator scConfig;
 	scConfig.apply(this->viewerToolBar->actions());
 	scConfig.apply(this->editortoolbar->actions());
+	scConfig.apply(this->rotationActions);
 
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
