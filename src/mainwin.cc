@@ -94,6 +94,8 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
+#include "shortcuts.h"
+
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QTextDocument>
@@ -182,7 +184,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	this->consoleDock->setAction(this->viewActionHideConsole);
 	this->parameterDock->setConfigKey("view/hideCustomizer");
 	this->parameterDock->setAction(this->viewActionHideParameters);
-
+	
 	this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
 	updateStatusBar(nullptr);
 
@@ -468,6 +470,10 @@ MainWindow::MainWindow(const QStringList &filenames)
 	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 
+	ShortCutConfigurator scConfig;
+	scConfig.apply(this->viewerToolBar->actions());
+	scConfig.apply(this->editortoolbar->actions());
+
 	InputDriverManager::instance()->registerActions(this->menuBar()->actions(),"");
 	Preferences* instance = Preferences::inst();
 	instance->ButtonConfig->init();
@@ -567,6 +573,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	viewModeThrownTogether();
 	show();
 
+
 #ifdef ENABLE_OPENCSG
 	viewModePreview();
 #else
@@ -593,13 +600,15 @@ void MainWindow::initActionIcon(QAction *action, const char *darkResource, const
 
 void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
 {
+
 	for (auto &action : actions) {
 		// prevent adding shortcut twice if action is added to multiple toolbars
 		if (action->toolTip().contains("&nbsp;")) {
 	    continue;
 		}
-		
+
 		const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+
 		if (shortCut.isEmpty()) {
 	    continue;
 		}
@@ -2753,8 +2762,10 @@ void MainWindow::hideEditor()
 {
 	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
+		QTimer::singleShot(0,consoleDock,SLOT(setFocus()));
 	} else {
 		editorDock->show();
+		QTimer::singleShot(0,editorDock,SLOT(setFocus()));
 	}
 }
 
